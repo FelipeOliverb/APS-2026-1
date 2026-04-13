@@ -4,12 +4,10 @@ import cors from "cors"
 const app = express()
 const PORT = 3000
 
-app.use(cors({
-  origin: "http://localhost:5174"
-}))
+
+app.use(cors())
 
 app.use(express.json())
-
 
 const intents = [
   {
@@ -18,27 +16,21 @@ const intents = [
     sentimento: "negativo"
   },
   {
-    tag: "poluição",
+    tag: "poluicao",
     patterns: ["poluicao", "lixo", "contaminacao", "esgoto", "ar poluido"],
     sentimento: "negativo"
   },
   {
-    tag: "mudancas climáticas",
-    patterns: ["aquecimento global", "clima", "temperatura", "emissoes", "efeito estufa"],
+    tag: "mudancas climaticas",
+    patterns: ["aquecimento global", "clima", "temperatura", "emissoes"],
     sentimento: "negativo"
   },
   {
     tag: "sustentabilidade",
-    patterns: ["sustentavel", "energia limpa", "reciclagem", "preservacao", "ecologico"],
+    patterns: ["sustentavel", "energia limpa", "reciclagem", "preservacao"],
     sentimento: "positivo"
-  },
-  {
-    tag: "biodiversidade",
-    patterns: ["animais", "extincao", "fauna", "flora", "especies"],
-    sentimento: "negativo"
   }
 ]
-
 
 function normalizar(texto: string) {
   return texto
@@ -46,7 +38,6 @@ function normalizar(texto: string) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
 }
-
 
 function classificar(texto: string) {
   const normalizado = normalizar(texto)
@@ -78,34 +69,35 @@ function classificar(texto: string) {
   return melhorMatch
 }
 
-
 app.post("/analisar", (req: Request, res: Response) => {
-  const { link } = req.body
-
-  if (!link) {
-    return res.status(400).json({
-      sucesso: false,
-      erro: "Link não enviado"
-    })
-  }
-
   try {
+    const { link } = req.body
+
+    if (!link) {
+      return res.status(400).json({
+        sucesso: false,
+        erro: "Link não enviado"
+      })
+    }
+
     const resultado = classificar(link)
 
     return res.json({
       sucesso: true,
       sentimento: resultado.sentimento,
-      tema: resultado.tag,
-      score: resultado.score
+      tema: resultado.tag
     })
+
   } catch (err) {
+    console.error(err)
+
     return res.status(500).json({
       sucesso: false,
-      erro: "Erro ao analisar"
+      erro: "Erro interno no servidor"
     })
   }
 })
 
 app.listen(PORT, () => {
-  console.log(`Server rodando em http://localhost:${PORT}`)
+  console.log(`Server 2 rodando em http://localhost:${PORT}`)
 })

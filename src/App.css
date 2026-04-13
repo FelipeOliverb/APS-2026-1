@@ -101,3 +101,44 @@ button:hover {
   background: rgba(234, 179, 8, 0.2);
   border: 1px solid #eab308;
 }
+
+.graficos-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  
+}
+
+
+.grafico-barra {
+  width: 60%;
+}
+
+
+.grafico-pizza {
+  width: 50%;
+}
+
+.resumo {
+  padding: 2%;
+ ;
+}
+
+.titulo-estatisticas {
+  padding: 2%;
+}
+
+.titulo{
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #22c55e;
+  margin-bottom: 20px;
+}
+
+.content h1 {
+  padding: 20px;
+  margin-top: 80px;
+  font-size: 32px;
+  font-weight: bold;
+}

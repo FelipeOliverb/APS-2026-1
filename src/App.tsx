@@ -1,20 +1,45 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import './App.css'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer
+} from "recharts"
 
 type Resultado = {
   sentimento: string
   tema: string
 }
 
+type DadoGrafico = {
+  nome: string
+  valor: number
+  porcentagem: string
+}
+
 function App() {
-  const [link, setLink] = useState<string>('')
+  const [link, setLink] = useState('')
   const [resultado, setResultado] = useState<Resultado | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
-  const [msg, setMsg] = useState<string>('')
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [historico, setHistorico] = useState<Resultado[]>([])
+
+  const CORES_SENTIMENTO: Record<string, string> = {
+    positivo: "#00fe72",
+    negativo: "#db1d1d",
+    neutro: "#7ee5ff"
+  }
 
   const analisar = async () => {
     if (!link) {
-      setMsg("Cole um link primeiro")
+      setMsg("Cole um texto primeiro")
       return
     }
 
@@ -30,27 +55,57 @@ function App() {
         body: JSON.stringify({ link })
       })
 
-      const data: Resultado = await res.json()
+      if (!res.ok) throw new Error("Erro no servidor")
 
-      setResultado(data)
+      const data = await res.json()
+
+      if (!data.sucesso) {
+        setMsg(data.erro)
+        return
+      }
+
+      const novoResultado: Resultado = {
+        sentimento: data.sentimento,
+        tema: data.tema
+      }
+
+      setResultado(novoResultado)
+      setHistorico((prev) => [...prev, novoResultado])
+
     } catch (error) {
-      setMsg("Erro ao analisar notícia")
       console.error(error)
+      setMsg("Erro ao conectar com o servidor")
     } finally {
       setLoading(false)
     }
   }
 
+  
+  const dadosGrafico: DadoGrafico[] = useMemo(() => {
+    const contagem: Record<string, number> = {}
+
+    historico.forEach((item) => {
+      contagem[item.sentimento] = (contagem[item.sentimento] || 0) + 1
+    })
+
+    const total = historico.length || 1
+
+    return Object.keys(contagem).map((key) => ({
+      nome: key,
+      valor: contagem[key],
+      porcentagem: ((contagem[key] / total) * 100).toFixed(1)
+    }))
+  }, [historico])
+
   return (
     <section id="center">
       <div className="content">
         <h1>Analisador de Notícias</h1>
-        <p>Cole o link abaixo</p>
 
         <div className="input-group">
           <input
             type="text"
-            placeholder="Cole o link da notícia"
+            placeholder="Digite um texto"
             value={link}
             onChange={(e) => setLink(e.target.value)}
           />
@@ -61,21 +116,82 @@ function App() {
         </div>
 
         {msg && <p className="mensagem">{msg}</p>}
-
-        {loading && <p className="loading">Analisando notícia...</p>}
+        {loading && <p>Carregando...</p>}
 
         {resultado && (
           <div className={`resultado ${resultado.sentimento}`}>
             <h2>Resultado</h2>
-
-            <p>
-              <strong>Sentimento:</strong> {resultado.sentimento}
-            </p>
-
-            <p>
-              <strong>Tema:</strong> {resultado.tema}
-            </p>
+            <p><strong>Sentimento:</strong> {resultado.sentimento}</p>
+            <p><strong>Tema:</strong> {resultado.tema}</p>
           </div>
+        )}
+
+        {historico.length > 0 && (
+          <>
+            <h2 className="titulo-estatisticas">Estatísticas</h2>
+
+            <div className="resumo">
+              {dadosGrafico.map((item) => (
+                <p key={item.nome}>
+                  {item.nome}: <strong>{item.porcentagem}%</strong>
+                </p>
+              ))}
+            </div>
+
+            <div className="graficos-container">
+
+              
+              <div className="grafico-barra">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={dadosGrafico}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="nome" />
+                    <YAxis />
+
+                    <Tooltip
+                      formatter={(_, __, props: any) => {
+                        const payload = props?.payload
+                        return [`${payload?.porcentagem ?? 0}%`, "Porcentagem"]
+                      }}
+                    />
+
+                    <Bar dataKey="valor">
+                      {dadosGrafico.map((entry, index) => (
+                        <Cell
+                          key={index}
+                          fill={CORES_SENTIMENTO[entry.nome]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              
+              <div className="grafico-pizza">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={dadosGrafico}
+                      dataKey="valor"
+                      nameKey="nome"
+                      outerRadius={100}
+                    >
+                      {dadosGrafico.map((entry, index) => (
+                        <Cell
+                          key={index}
+                          fill={CORES_SENTIMENTO[entry.nome]}
+                        />
+                      ))}
+                    </Pie>    
+
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+            </div>
+          </>
         )}
       </div>
     </section>
