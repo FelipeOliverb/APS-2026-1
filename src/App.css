@@ -6,8 +6,9 @@
 }
 
 body {
-  background: linear-gradient(135deg, #0f172a, #1e293b);
+  background: #0f172a;
   color: #fff;
+
 }
 
 #center {
@@ -15,9 +16,13 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  font-size: 15px;
+  height: 85vh;
   gap: 30px;
+  background-color: #0f172a;
 }
+
+
 
 .hero img {
   width: 120px;
@@ -84,7 +89,7 @@ button:hover {
 .mensagem {
   color: rgb(255, 255, 255);
   padding: 5%;
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .resultado.positivo {
@@ -110,6 +115,12 @@ button:hover {
   
 }
 
+.grafico {
+  flex: 1;
+  min-width: 300px;
+  margin-bottom: 5%;
+}
+
 
 .grafico-barra {
   width: 60%;
@@ -122,7 +133,7 @@ button:hover {
 
 .resumo {
   padding: 2%;
- ;
+ 
 }
 
 .titulo-estatisticas {
@@ -133,12 +144,17 @@ button:hover {
   font-size: 2.5rem;
   font-weight: bold;
   color: #22c55e;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  margin-top: 15px;
+  padding-top: 15px;
 }
 
+
+
 .content h1 {
-  padding: 20px;
-  margin-top: 80px;
+  padding: 10px;
+  margin-top: 100px;
   font-size: 32px;
   font-weight: bold;
 }
+

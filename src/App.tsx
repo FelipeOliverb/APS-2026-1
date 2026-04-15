@@ -9,8 +9,11 @@ import {
   CartesianGrid,
   PieChart,
   Pie,
+  LineChart,
+  Line,
   Cell,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Legend
 } from "recharts"
 
 type Resultado = {
@@ -80,7 +83,7 @@ function App() {
     }
   }
 
-  
+ 
   const dadosGrafico: DadoGrafico[] = useMemo(() => {
     const contagem: Record<string, number> = {}
 
@@ -95,6 +98,26 @@ function App() {
       valor: contagem[key],
       porcentagem: ((contagem[key] / total) * 100).toFixed(1)
     }))
+  }, [historico])
+
+  
+  const dadosLinha = useMemo(() => {
+    let positivo = 0
+    let negativo = 0
+    let neutro = 0
+
+    return historico.map((item, index) => {
+      if (item.sentimento === "positivo") positivo++
+      if (item.sentimento === "negativo") negativo++
+      if (item.sentimento === "neutro") neutro++
+
+      return {
+        index: index + 1,
+        positivo,
+        negativo,
+        neutro
+      }
+    })
   }, [historico])
 
   return (
@@ -141,35 +164,26 @@ function App() {
             <div className="graficos-container">
 
               
-              <div className="grafico-barra">
-                <ResponsiveContainer width="100%" height={300}>
+              <div className="grafico">
+                <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={dadosGrafico}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="nome" />
                     <YAxis />
-
-                    <Tooltip
-                      formatter={(_, __, props: any) => {
-                        const payload = props?.payload
-                        return [`${payload?.porcentagem ?? 0}%`, "Porcentagem"]
-                      }}
-                    />
+                    <Tooltip />
 
                     <Bar dataKey="valor">
                       {dadosGrafico.map((entry, index) => (
-                        <Cell
-                          key={index}
-                          fill={CORES_SENTIMENTO[entry.nome]}
-                        />
+                        <Cell key={index} fill={CORES_SENTIMENTO[entry.nome]} />
                       ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
 
-              
-              <div className="grafico-pizza">
-                <ResponsiveContainer width="100%" height={300}>
+             
+              <div className="grafico">
+                <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
                       data={dadosGrafico}
@@ -178,15 +192,45 @@ function App() {
                       outerRadius={100}
                     >
                       {dadosGrafico.map((entry, index) => (
-                        <Cell
-                          key={index}
-                          fill={CORES_SENTIMENTO[entry.nome]}
-                        />
+                        <Cell key={index} fill={CORES_SENTIMENTO[entry.nome]} />
                       ))}
-                    </Pie>    
-
+                    </Pie>
                     <Tooltip />
                   </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              
+              <div className="grafico">
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={dadosLinha}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="index" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+
+                    <Line
+                      type="monotone"
+                      dataKey="positivo"
+                      stroke="#00fe72"
+                      strokeWidth={3}
+                    />
+
+                    <Line
+                      type="monotone"
+                      dataKey="negativo"
+                      stroke="#db1d1d"
+                      strokeWidth={3}
+                    />
+
+                    <Line
+                      type="monotone"
+                      dataKey="neutro"
+                      stroke="#7ee5ff"
+                      strokeWidth={3}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
 
