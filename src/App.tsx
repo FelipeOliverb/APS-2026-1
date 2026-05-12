@@ -19,6 +19,8 @@ import {
 type Resultado = {
   sentimento: string
   tema: string
+  sentimentoConfianca: string
+  temaConfianca: string
 }
 
 type DadoGrafico = {
@@ -50,26 +52,39 @@ function App() {
       setLoading(true)
       setMsg("")
 
-      const res = await fetch("http://localhost:3000/analisar", {
+      const res = await fetch("http://localhost:5000/predict", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ link })
+        },  
+        body: JSON.stringify({ "link": link })
+        // body: JSON.stringify({ "text": texto })
       })
+
+
+      // const res = await fetch("http://localhost:5000/insert", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json"
+      //   },  
+      //   body: JSON.stringify({ "link": link, "date" : "12/05/2026" })
+      // })
 
       if (!res.ok) throw new Error("Erro no servidor")
 
       const data = await res.json()
-
-      if (!data.sucesso) {
-        setMsg(data.erro)
+      if (data.error) {
+        setMsg(data.error)
         return
       }
 
+      const prediction = data.prediction || {}
+
       const novoResultado: Resultado = {
-        sentimento: data.sentimento,
-        tema: data.tema
+        sentimento: (prediction.sentiment || prediction.sentimento || "").toString(),
+        tema: (prediction.class || prediction.tema || "").toString(),
+        sentimentoConfianca: (prediction.sentiment_confidence || 0).toString(),
+        temaConfianca: (prediction.class_confidence || 0).toString()
       }
 
       setResultado(novoResultado)
@@ -146,6 +161,8 @@ function App() {
             <h2>Resultado</h2>
             <p><strong>Sentimento:</strong> {resultado.sentimento}</p>
             <p><strong>Tema:</strong> {resultado.tema}</p>
+            <p><strong>Confiança do Sentimento  :</strong> {resultado.sentimentoConfianca}%</p>
+            <p><strong>Confiança do Tema:</strong> {resultado.temaConfianca}%</p>
           </div>
         )}
 
