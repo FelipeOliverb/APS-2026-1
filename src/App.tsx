@@ -13,6 +13,15 @@ type Resultado = {
   temaConfianca: string
 }
 
+type NetworkInfo = {
+  link: string
+  protocolo: string
+  dominio: string
+  dns: string
+  ip: string
+  path: string
+}
+
 type DadoGrafico = {
   nome: string
   valor: number
@@ -34,6 +43,7 @@ function isURL(value: string): boolean {
 function App() {
   const [link, setLink] = useState('')
   const [resultado, setResultado] = useState<Resultado | null>(null)
+  const [networkInfo, setNetworkInfo] = useState<NetworkInfo | null>(null)
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
   const [historico, setHistorico] = useState<Resultado[]>([])
@@ -60,8 +70,15 @@ function App() {
       setViewMode('analisar')
       setHistoricoDias({})
       setDadosLinhaDias([])
+      setNetworkInfo(null)
 
       const payload = inputType === 'link' ? { link } : { text: link }
+      const networkRequest = fetch("http://localhost:5000/network-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+
       const res = await fetch("http://localhost:5000/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -84,6 +101,23 @@ function App() {
       }
       setResultado(novoResultado)
       setHistorico((prev) => [...prev, novoResultado])
+
+      try {
+        const networkRes = await networkRequest
+        if (networkRes.ok) {
+          const networkData = (await networkRes.json()) as Partial<NetworkInfo>
+          setNetworkInfo({
+            link: networkData.link ?? '',
+            protocolo: networkData.protocolo ?? '',
+            dominio: networkData.dominio ?? '',
+            dns: networkData.dns ?? '',
+            ip: networkData.ip ?? '',
+            path: networkData.path ?? ''
+          })
+        }
+      } catch {
+        setNetworkInfo(null)
+      }
     } catch (error) {
       console.error(error)
       setMsg("Erro ao conectar com o servidor")
@@ -218,6 +252,18 @@ function App() {
                 <p><strong>Tema:</strong> {resultado.tema}</p>
                 <p><strong>Confiança do Sentimento:</strong> {resultado.sentimentoConfianca}%</p>
                 <p><strong>Confiança do Tema:</strong> {resultado.temaConfianca}%</p>
+              </div>
+            )}
+
+            {networkInfo && (
+              <div className="resultado">
+                <h2>Informações de Rede</h2>
+                <p><strong>Link:</strong> {networkInfo.link}</p>
+                <p><strong>Protocolo:</strong> {networkInfo.protocolo}</p>
+                <p><strong>Domínio:</strong> {networkInfo.dominio}</p>
+                <p><strong>DNS:</strong> {networkInfo.dns}</p>
+                <p><strong>IP:</strong> {networkInfo.ip}</p>
+                <p><strong>Path:</strong> {networkInfo.path}</p>
               </div>
             )}
 
