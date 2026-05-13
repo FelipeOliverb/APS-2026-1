@@ -250,8 +250,8 @@ function App() {
                 <h2>Resultado</h2>
                 <p><strong>Sentimento:</strong> {resultado.sentimento}</p>
                 <p><strong>Tema:</strong> {resultado.tema}</p>
-                <p><strong>Confiança do Sentimento:</strong> {resultado.sentimentoConfianca}%</p>
-                <p><strong>Confiança do Tema:</strong> {resultado.temaConfianca}%</p>
+                <p><strong>Confiança do Sentimento:</strong> {resultado.sentimentoConfianca}</p>
+                <p><strong>Confiança do Tema:</strong> {resultado.temaConfianca}</p>
               </div>
             )}
 
@@ -335,7 +335,7 @@ function App() {
               return (
                 <div className="grafico" key={dia}>
                   <h3>{dia}</h3>
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
                         data={dadosPizza}
